@@ -1,13 +1,18 @@
 package com.example.quotesapp
 
+import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -15,14 +20,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.quotesapp.screens.QuoteDetail
 import com.example.quotesapp.screens.QuoteListScreen
 import com.example.quotesapp.ui.theme.QuotesAppTheme
@@ -164,5 +173,53 @@ fun MediaComposable() {
             mediaPlayer.stop()
             mediaPlayer.release()
         }
+    }
+}
+
+//Producer state
+@Composable
+fun Loader() {
+    val degree = produceState(initialValue = 0) {
+        while (true) {
+            delay(16)
+            value = (value + 10) % 360
+        }
+    }
+    Box(
+        modifier = Modifier.fillMaxSize(1f),
+        content = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(imageVector = Icons.Default.Refresh,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(60.dp)
+                        .rotate(degree.value.toFloat())
+                )
+                Text(text = "Loading....")
+            }
+        },
+    )
+}
+
+//derived State
+@SuppressLint("UnrememberedMutableState")
+@Composable
+fun Derived() {
+    val tableOf = remember {
+        mutableStateOf(5)
+    }
+    val index = produceState(initialValue = 1) {
+        repeat(9) {
+            delay(1000)
+            value +=1
+        }
+    }
+    val message = derivedStateOf {
+        "${tableOf.value} * ${index.value} = ${tableOf.value * index.value}"
+    }
+
+    Box(modifier = Modifier.fillMaxSize(1f)) {
+        Text(text = message.value,
+            style = MaterialTheme.typography.headlineMedium )
     }
 }
